@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Palm Reader</title>
+    <title>心靈透視</title>
     <!-- 載入 PWA 的 Manifest -->
     <link rel="manifest" href="manifest.json">
     <style>
@@ -24,20 +24,20 @@
         .palm-img { width: 80%; max-width: 300px; margin-bottom: 20px; filter: invert(1); }
 
         .grid-list {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px 40px;
-            text-align: left; font-size: 18px; font-weight: bold; letter-spacing: 1px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px 40px;
+            text-align: left; font-size: 20px; font-weight: bold; letter-spacing: 2px;
         }
 
-        .category-list { text-align: center; font-size: 20px; line-height: 1.8; }
-        .category { margin: 20px 0; padding: 15px; border-radius: 10px; transition: background 0.3s; }
+        .category-list { text-align: center; font-size: 20px; line-height: 1.8; width: 85%; }
+        .category { margin: 15px 0; padding: 15px; border-radius: 10px; transition: background 0.3s; }
         .category.selected { background-color: rgba(255, 255, 255, 0.2); }
         
-        h2 { margin-bottom: 5px; text-decoration: underline; text-underline-offset: 5px; letter-spacing: 2px;}
-        .sub-text { font-size: 16px; color: #ccc; }
+        h2 { margin-bottom: 5px; text-decoration: underline; text-underline-offset: 5px; letter-spacing: 4px; font-size: 24px;}
+        .sub-text { font-size: 16px; color: #ccc; letter-spacing: 1px;}
         
         /* 魔術師秘密按鈕（透明的，放在左上角） */
         #secret-btn {
-            position: absolute; top: 0; left: 0; width: 50px; height: 50px; z-index: 999;
+            position: absolute; top: 0; left: 0; width: 60px; height: 60px; z-index: 999;
         }
     </style>
 </head>
@@ -46,47 +46,48 @@
     <!-- 魔術師秘密開關：點擊左上角來獲取推播權限 -->
     <div id="secret-btn" onclick="requestNotificationPermission()"></div>
 
-    <!-- 畫面 1 -->
+    <!-- 畫面 1：手相圖與中文對應單字 -->
     <div id="screen1" class="screen">
-        <img src="palm.jpg" alt="Palm" class="palm-img">
+        <img src="palm.jpg" alt="手相圖" class="palm-img">
         <div class="grid-list">
-            <div>1. Destiny</div>   <div>7. Career</div>
-            <div>2. Dreams</div>    <div>8. Adventure</div>
-            <div>3. Fears</div>     <div>9. Aura</div>
-            <div>4. Romance</div>   <div>10. Wellness</div>
-            <div>5. Ambition</div>  <div>11. Friendship</div>
-            <div>6. Passion</div>   <div>12. Creativity</div>
+            <div>1. 命運</div>   <div>7. 事業</div>
+            <div>2. 夢想</div>   <div>8. 冒險</div>
+            <div>3. 恐懼</div>   <div>9. 氣場</div>
+            <div>4. 浪漫</div>   <div>10. 健康</div>
+            <div>5. 野心</div>   <div>11. 友誼</div>
+            <div>6. 熱情</div>   <div>12. 創意</div>
         </div>
-        <p style="color:#666; font-size:14px; margin-top:30px;">(Swipe Left)</p>
+        <p style="color:#666; font-size:14px; margin-top:30px;">(向左滑動進入下一步)</p>
     </div>
 
-    <!-- 畫面 2 -->
+    <!-- 畫面 2：中文分類點擊區 -->
     <div id="screen2" class="screen">
         <div class="category-list">
             <div class="category" data-value="8" onclick="toggleCategory(this)">
-                <h2>FATE</h2>
-                <div class="sub-text">Adventure - Aura - Wellness<br>Friendship - Creativity</div>
+                <h2>宿命</h2>
+                <div class="sub-text">冒險 - 氣場 - 健康<br>友誼 - 創意</div>
             </div>
             <div class="category" data-value="4" onclick="toggleCategory(this)">
-                <h2>LIFE</h2>
-                <div class="sub-text">Romance - Ambition - Passion<br>Career - Creativity</div>
+                <h2>人生</h2>
+                <div class="sub-text">浪漫 - 野心 - 熱情<br>事業 - 創意</div>
             </div>
             <div class="category" data-value="2" onclick="toggleCategory(this)">
-                <h2>HEART</h2>
-                <div class="sub-text">Dreams - Fears - Passion<br>Career - Wellness - Friendship</div>
+                <h2>內心</h2>
+                <div class="sub-text">夢想 - 恐懼 - 熱情<br>事業 - 健康 - 友誼</div>
             </div>
             <div class="category" data-value="1" onclick="toggleCategory(this)">
-                <h2>HEAD</h2>
-                <div class="sub-text">Destiny - Fears - Ambition<br>Career - Aura - Friendship</div>
+                <h2>理智</h2>
+                <div class="sub-text">命運 - 恐懼 - 野心<br>事業 - 氣場 - 友誼</div>
             </div>
         </div>
     </div>
 
     <script>
+        // 中文字典對應表 (手錶上會顯示這個)
         const dictionary = {
-            1: "Destiny", 2: "Dreams", 3: "Fears", 4: "Romance",
-            5: "Ambition", 6: "Passion", 7: "Career", 8: "Adventure",
-            9: "Aura", 10: "Wellness", 11: "Friendship", 12: "Creativity"
+            1: "命運", 2: "夢想", 3: "恐懼", 4: "浪漫",
+            5: "野心", 6: "熱情", 7: "事業", 8: "冒險",
+            9: "氣場", 10: "健康", 11: "友誼", 12: "創意"
         };
 
         // --- 1. 註冊 Service Worker (PWA 通知必備) ---
@@ -114,10 +115,10 @@
         document.addEventListener('touchstart', e => startX = e.changedTouches[0].screenX);
         document.addEventListener('touchend', e => {
             let endX = e.changedTouches[0].screenX;
-            if (startX - endX > 50) {
+            if (startX - endX > 50) { // 向左滑
                 document.getElementById('screen1').style.transform = 'translateX(-100%)';
                 document.getElementById('screen2').style.transform = 'translateX(0)';
-            } else if (endX - startX > 50) {
+            } else if (endX - startX > 50) { // 向右滑
                 document.getElementById('screen1').style.transform = 'translateX(0)';
                 document.getElementById('screen2').style.transform = 'translateX(100%)';
             }
@@ -140,13 +141,13 @@
         // --- 4. 鎖屏觸發！直接發送本機推播 ---
         document.addEventListener("visibilitychange", () => {
             if (document.hidden && totalScore > 0 && !isSent) {
-                let finalWord = dictionary[totalScore] || "Unknown";
+                let finalWord = dictionary[totalScore] || "未知";
                 
                 // 呼叫 Service Worker 觸發系統通知
                 if (navigator.serviceWorker) {
                     navigator.serviceWorker.ready.then(registration => {
                         registration.showNotification("💡", {
-                            body: finalWord,     // Apple Watch 上會顯示這個單字
+                            body: finalWord,     // 手錶上會直接跳出例如："💡 夢想"
                             vibrate: [200, 100, 200], // 震動提示
                             badge: "icon.png"
                         });
