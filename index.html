@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Palm Reader</title>
+    <!-- 載入 PWA 的 Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000; color: #fff;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden; user-select: none;
+        }
+        .screen {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: transform 0.4s ease-in-out;
+        }
+        #screen1 { transform: translateX(0); }
+        #screen2 { transform: translateX(100%); }
+
+        .palm-img { width: 80%; max-width: 300px; margin-bottom: 20px; filter: invert(1); }
+
+        .grid-list {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px 40px;
+            text-align: left; font-size: 18px; font-weight: bold; letter-spacing: 1px;
+        }
+
+        .category-list { text-align: center; font-size: 20px; line-height: 1.8; }
+        .category { margin: 20px 0; padding: 15px; border-radius: 10px; transition: background 0.3s; }
+        .category.selected { background-color: rgba(255, 255, 255, 0.2); }
+        
+        h2 { margin-bottom: 5px; text-decoration: underline; text-underline-offset: 5px; letter-spacing: 2px;}
+        .sub-text { font-size: 16px; color: #ccc; }
+        
+        /* 魔術師秘密按鈕（透明的，放在左上角） */
+        #secret-btn {
+            position: absolute; top: 0; left: 0; width: 50px; height: 50px; z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 魔術師秘密開關：點擊左上角來獲取推播權限 -->
+    <div id="secret-btn" onclick="requestNotificationPermission()"></div>
+
+    <!-- 畫面 1 -->
+    <div id="screen1" class="screen">
+        <img src="palm.jpg" alt="Palm" class="palm-img">
+        <div class="grid-list">
+            <div>1. Destiny</div>   <div>7. Career</div>
+            <div>2. Dreams</div>    <div>8. Adventure</div>
+            <div>3. Fears</div>     <div>9. Aura</div>
+            <div>4. Romance</div>   <div>10. Wellness</div>
+            <div>5. Ambition</div>  <div>11. Friendship</div>
+            <div>6. Passion</div>   <div>12. Creativity</div>
+        </div>
+        <p style="color:#666; font-size:14px; margin-top:30px;">(Swipe Left)</p>
+    </div>
+
+    <!-- 畫面 2 -->
+    <div id="screen2" class="screen">
+        <div class="category-list">
+            <div class="category" data-value="8" onclick="toggleCategory(this)">
+                <h2>FATE</h2>
+                <div class="sub-text">Adventure - Aura - Wellness<br>Friendship - Creativity</div>
+            </div>
+            <div class="category" data-value="4" onclick="toggleCategory(this)">
+                <h2>LIFE</h2>
+                <div class="sub-text">Romance - Ambition - Passion<br>Career - Creativity</div>
+            </div>
+            <div class="category" data-value="2" onclick="toggleCategory(this)">
+                <h2>HEART</h2>
+                <div class="sub-text">Dreams - Fears - Passion<br>Career - Wellness - Friendship</div>
+            </div>
+            <div class="category" data-value="1" onclick="toggleCategory(this)">
+                <h2>HEAD</h2>
+                <div class="sub-text">Destiny - Fears - Ambition<br>Career - Aura - Friendship</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dictionary = {
+            1: "Destiny", 2: "Dreams", 3: "Fears", 4: "Romance",
+            5: "Ambition", 6: "Passion", 7: "Career", 8: "Adventure",
+            9: "Aura", 10: "Wellness", 11: "Friendship", 12: "Creativity"
+        };
+
+        // --- 1. 註冊 Service Worker (PWA 通知必備) ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('SW Registered!', reg))
+            .catch(err => console.log('SW Registration failed', err));
+        }
+
+        // --- 2. 魔術師事前準備：獲取通知權限 ---
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        // 秘密提示：螢幕稍微閃一下代表權限已開啟
+                        document.body.style.backgroundColor = '#222';
+                        setTimeout(() => document.body.style.backgroundColor = '#000', 200);
+                    }
+                });
+            }
+        }
+
+        // --- 3. 滑動與點選邏輯 ---
+        let startX = 0;
+        document.addEventListener('touchstart', e => startX = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => {
+            let endX = e.changedTouches[0].screenX;
+            if (startX - endX > 50) {
+                document.getElementById('screen1').style.transform = 'translateX(-100%)';
+                document.getElementById('screen2').style.transform = 'translateX(0)';
+            } else if (endX - startX > 50) {
+                document.getElementById('screen1').style.transform = 'translateX(0)';
+                document.getElementById('screen2').style.transform = 'translateX(100%)';
+            }
+        });
+
+        let totalScore = 0;
+        let isSent = false;
+
+        function toggleCategory(element) {
+            let val = parseInt(element.getAttribute('data-value'));
+            if (element.classList.contains('selected')) {
+                element.classList.remove('selected');
+                totalScore -= val;
+            } else {
+                element.classList.add('selected');
+                totalScore += val;
+            }
+        }
+
+        // --- 4. 鎖屏觸發！直接發送本機推播 ---
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden && totalScore > 0 && !isSent) {
+                let finalWord = dictionary[totalScore] || "Unknown";
+                
+                // 呼叫 Service Worker 觸發系統通知
+                if (navigator.serviceWorker) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification("💡", {
+                            body: finalWord,     // Apple Watch 上會顯示這個單字
+                            vibrate: [200, 100, 200], // 震動提示
+                            badge: "icon.png"
+                        });
+                    });
+                }
+                isSent = true; 
+            }
+        });
+    </script>
+</body>
+</html>
