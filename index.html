@@ -11,7 +11,7 @@
             background-color: #000; color: #fff;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             overflow: hidden; user-select: none;
-            -webkit-tap-highlight-color: transparent; /* 防止點擊時出現反白框 */
+            -webkit-tap-highlight-color: transparent;
         }
         .screen {
             width: 100%; height: 100%; position: absolute; top: 0; left: 0;
@@ -35,10 +35,7 @@
         h2 { margin-bottom: 5px; text-decoration: underline; text-underline-offset: 5px; letter-spacing: 3px; font-size: 24px;}
         .sub-text { font-size: 16px; color: #ccc; letter-spacing: 1px;}
         
-        /* --- 隱藏的魔術按鈕 --- */
-        /* 1. 左上角：獲取推播權限 */
         #btn-permission { position: absolute; top: 0; left: 0; width: 80px; height: 80px; z-index: 999; }
-        /* 2. 右上角：中英文切換 */
         #btn-language { position: absolute; top: 0; right: 0; width: 80px; height: 80px; z-index: 999; }
     </style>
 </head>
@@ -50,25 +47,18 @@
 
     <!-- 畫面 1 -->
     <div id="screen1" class="screen">
-        <!-- 圖片區：預設顯示中文版圖片 -->
         <img id="palm-img" src="palm_zh.jpg" alt="Palm" class="palm-img">
-        
         <div class="grid-list">
             <div class="lang-text" data-zh="1. 命運" data-en="1. Destiny">1. 命運</div>   
             <div class="lang-text" data-zh="7. 事業" data-en="7. Career">7. 事業</div>
-            
             <div class="lang-text" data-zh="2. 夢想" data-en="2. Dreams">2. 夢想</div>    
             <div class="lang-text" data-zh="8. 冒險" data-en="8. Adventure">8. 冒險</div>
-            
             <div class="lang-text" data-zh="3. 恐懼" data-en="3. Fears">3. 恐懼</div>     
             <div class="lang-text" data-zh="9. 氣場" data-en="9. Aura">9. 氣場</div>
-            
             <div class="lang-text" data-zh="4. 浪漫" data-en="4. Romance">4. 浪漫</div>   
             <div class="lang-text" data-zh="10. 健康" data-en="10. Wellness">10. 健康</div>
-            
             <div class="lang-text" data-zh="5. 野心" data-en="5. Ambition">5. 野心</div>  
             <div class="lang-text" data-zh="11. 友誼" data-en="11. Friendship">11. 友誼</div>
-            
             <div class="lang-text" data-zh="6. 熱情" data-en="6. Passion">6. 熱情</div>   
             <div class="lang-text" data-zh="12. 創意" data-en="12. Creativity">12. 創意</div>
         </div>
@@ -108,7 +98,12 @@
     </div>
 
     <script>
-        // --- 字典：包含中英雙語，推播時會根據當前語言發送對應的文字 ---
+        // ==========================================
+        // 🔮 你的專屬捷徑名稱 (請將捷徑更名為此名稱)
+        // ==========================================
+        const targetShortcutName = "MagicTrigger"; 
+        // ==========================================
+
         const dictionary = {
             zh: {
                 1: "命運", 2: "夢想", 3: "恐懼", 4: "浪漫", 5: "野心", 6: "熱情", 
@@ -120,22 +115,20 @@
             }
         };
 
-        // --- 預設狀態 ---
-        let currentLang = 'zh'; // 預設為中文
+        let currentLang = 'zh'; 
         let totalScore = 0;
         let isSent = false;
 
-        // --- PWA Service Worker ---
+        // --- PWA Service Worker (必備) ---
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
 
-        // --- 魔術師專用：獲取通知權限 (點擊左上角) ---
+        // --- 魔術師專用按鈕：獲取推播權限 ---
         function requestNotificationPermission() {
             if ('Notification' in window) {
                 Notification.requestPermission().then(permission => {
                     if (permission === 'granted') {
-                        // 稍微震動+閃爍作為成功提示
                         if(navigator.vibrate) navigator.vibrate(50);
                         document.body.style.backgroundColor = '#222';
                         setTimeout(() => document.body.style.backgroundColor = '#000', 150);
@@ -144,27 +137,14 @@
             }
         }
 
-        // --- 魔術師專用：中英文無縫切換 (點擊右上角) ---
+        // --- 魔術師專用按鈕：中英切換 ---
         function toggleLanguage() {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
-            
-            // 1. 切換手相圖片
             document.getElementById('palm-img').src = currentLang === 'zh' ? 'palm_zh.jpg' : 'palm_en.jpg';
+            document.querySelectorAll('.lang-text').forEach(el => el.innerText = el.getAttribute(`data-${currentLang}`));
+            document.querySelectorAll('.lang-html').forEach(el => el.innerHTML = el.getAttribute(`data-${currentLang}`));
 
-            // 2. 切換純文字內容
-            document.querySelectorAll('.lang-text').forEach(el => {
-                el.innerText = el.getAttribute(`data-${currentLang}`);
-            });
-
-            // 3. 切換含排版(br)的文字內容
-            document.querySelectorAll('.lang-html').forEach(el => {
-                el.innerHTML = el.getAttribute(`data-${currentLang}`);
-            });
-
-            // 4. 魔術師秘密回饋：手機輕微震動一下，讓你知道切換成功了，不需要盯著螢幕看
             if(navigator.vibrate) navigator.vibrate(30);
-            
-            // 畫面輕微閃爍回饋
             document.body.style.backgroundColor = '#111';
             setTimeout(() => document.body.style.backgroundColor = '#000', 100);
         }
@@ -195,12 +175,14 @@
             }
         }
 
-        // --- 鎖定螢幕(進入背景) 觸發推播 ---
+        // --- 🎭 魔術核心：鎖定螢幕觸發 ---
         document.addEventListener("visibilitychange", () => {
             if (document.hidden && totalScore > 0 && !isSent) {
-                // 會根據目前的語言去抓單字 (例如中文模式會抓"夢想"，英文模式會抓"Dreams")
+                
+                // 取得最終單字
                 let finalWord = dictionary[currentLang][totalScore] || (currentLang === 'zh' ? "未知" : "Unknown");
                 
+                // 【動作 1】發送 Apple Watch 原生推播
                 if (navigator.serviceWorker) {
                     navigator.serviceWorker.ready.then(registration => {
                         registration.showNotification("💡", {
@@ -210,6 +192,23 @@
                         });
                     });
                 }
+
+                // 【動作 2】秘密觸發 iOS 捷徑 (隱形背景呼叫)
+                if (targetShortcutName && targetShortcutName.trim() !== "") {
+                    // 使用捷徑專用網址 scheme，把單字 (text) 餵給捷徑 (input)
+                    let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
+                    
+                    setTimeout(() => {
+                        let iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.src = shortcutUrl;
+                        document.body.appendChild(iframe);
+                        
+                        // 執行完移除以保持乾淨
+                        setTimeout(() => document.body.removeChild(iframe), 1500);
+                    }, 100); // 延遲0.1秒確保系統穩定分配資源
+                }
+
                 isSent = true; 
             }
         });
