@@ -29,19 +29,26 @@
         }
 
         .category-list { text-align: center; font-size: 20px; line-height: 1.8; width: 85%; }
-        .category { margin: 15px 0; padding: 15px; border-radius: 10px; transition: background 0.3s; }
+        .category { margin: 10px 0; padding: 15px; border-radius: 10px; transition: background 0.3s; }
         .category.selected { background-color: rgba(255, 255, 255, 0.2); }
         
-        h2 { margin-bottom: 5px; text-decoration: underline; text-underline-offset: 5px; letter-spacing: 3px; font-size: 24px;}
-        .sub-text { font-size: 16px; color: #ccc; letter-spacing: 1px;}
+        h2 { margin-bottom: 5px; text-decoration: underline; text-underline-offset: 5px; letter-spacing: 3px; font-size: 22px;}
+        .sub-text { font-size: 14px; color: #ccc; letter-spacing: 1px;}
         
+        /* --- 新增：鎖定心靈按鈕 --- */
+        .submit-btn {
+            margin-top: 15px; padding: 12px 40px; border-radius: 30px;
+            background-color: #333; color: #fff; font-size: 18px; font-weight: bold;
+            letter-spacing: 2px; border: 1px solid #555; transition: 0.3s;
+        }
+        .submit-btn:active { background-color: #fff; color: #000; }
+
         #btn-permission { position: absolute; top: 0; left: 0; width: 80px; height: 80px; z-index: 999; }
         #btn-language { position: absolute; top: 0; right: 0; width: 80px; height: 80px; z-index: 999; }
     </style>
 </head>
 <body>
 
-    <!-- 魔術師秘密開關 -->
     <div id="btn-permission" onclick="requestNotificationPermission()"></div>
     <div id="btn-language" onclick="toggleLanguage()"></div>
 
@@ -72,84 +79,60 @@
         <div class="category-list">
             <div class="category" data-value="8" onclick="toggleCategory(this)">
                 <h2 class="lang-text" data-zh="事業線" data-en="FATE">事業線</h2>
-                <div class="sub-text lang-html" data-zh="冒險 - 氣場 - 健康<br>友誼 - 創意" data-en="Adventure - Aura - Wellness<br>Friendship - Creativity">
-                    冒險 - 氣場 - 健康<br>友誼 - 創意
-                </div>
+                <div class="sub-text lang-html" data-zh="冒險 - 氣場 - 健康<br>友誼 - 創意" data-en="Adventure - Aura - Wellness<br>Friendship - Creativity">冒險 - 氣場 - 健康<br>友誼 - 創意</div>
             </div>
             <div class="category" data-value="4" onclick="toggleCategory(this)">
                 <h2 class="lang-text" data-zh="生命線" data-en="LIFE">生命線</h2>
-                <div class="sub-text lang-html" data-zh="浪漫 - 野心 - 熱情<br>事業 - 創意" data-en="Romance - Ambition - Passion<br>Career - Creativity">
-                    浪漫 - 野心 - 熱情<br>事業 - 創意
-                </div>
+                <div class="sub-text lang-html" data-zh="浪漫 - 野心 - 熱情<br>事業 - 創意" data-en="Romance - Ambition - Passion<br>Career - Creativity">浪漫 - 野心 - 熱情<br>事業 - 創意</div>
             </div>
             <div class="category" data-value="2" onclick="toggleCategory(this)">
                 <h2 class="lang-text" data-zh="感情線" data-en="HEART">感情線</h2>
-                <div class="sub-text lang-html" data-zh="夢想 - 恐懼 - 熱情<br>事業 - 健康 - 友誼" data-en="Dreams - Fears - Passion<br>Career - Wellness - Friendship">
-                    夢想 - 恐懼 - 熱情<br>事業 - 健康 - 友誼
-                </div>
+                <div class="sub-text lang-html" data-zh="夢想 - 恐懼 - 熱情<br>事業 - 健康 - 友誼" data-en="Dreams - Fears - Passion<br>Career - Wellness - Friendship">夢想 - 恐懼 - 熱情<br>事業 - 健康 - 友誼</div>
             </div>
             <div class="category" data-value="1" onclick="toggleCategory(this)">
                 <h2 class="lang-text" data-zh="智慧線" data-en="HEAD">智慧線</h2>
-                <div class="sub-text lang-html" data-zh="命運 - 恐懼 - 野心<br>事業 - 氣場 - 友誼" data-en="Destiny - Fears - Ambition<br>Career - Aura - Friendship">
-                    命運 - 恐懼 - 野心<br>事業 - 氣場 - 友誼
-                </div>
+                <div class="sub-text lang-html" data-zh="命運 - 恐懼 - 野心<br>事業 - 氣場 - 友誼" data-en="Destiny - Fears - Ambition<br>Career - Aura - Friendship">命運 - 恐懼 - 野心<br>事業 - 氣場 - 友誼</div>
             </div>
         </div>
+        
+        <!-- 核心機制：觀眾按下這個按鈕來觸發捷徑！ -->
+        <div class="submit-btn lang-text" data-zh="🔒 鎖定送出" data-en="🔒 Lock & Submit" onclick="triggerMagic()">🔒 鎖定送出</div>
     </div>
 
     <script>
-        // ==========================================
-        // 🔮 你的專屬捷徑名稱 (請將捷徑更名為此名稱)
-        // ==========================================
         const targetShortcutName = "MagicTrigger"; 
-        // ==========================================
 
         const dictionary = {
-            zh: {
-                1: "命運", 2: "夢想", 3: "恐懼", 4: "浪漫", 5: "野心", 6: "熱情", 
-                7: "事業", 8: "冒險", 9: "氣場", 10: "健康", 11: "友誼", 12: "創意"
-            },
-            en: {
-                1: "Destiny", 2: "Dreams", 3: "Fears", 4: "Romance", 5: "Ambition", 6: "Passion", 
-                7: "Career", 8: "Adventure", 9: "Aura", 10: "Wellness", 11: "Friendship", 12: "Creativity"
-            }
+            zh: { 1: "命運", 2: "夢想", 3: "恐懼", 4: "浪漫", 5: "野心", 6: "熱情", 7: "事業", 8: "冒險", 9: "氣場", 10: "健康", 11: "友誼", 12: "創意" },
+            en: { 1: "Destiny", 2: "Dreams", 3: "Fears", 4: "Romance", 5: "Ambition", 6: "Passion", 7: "Career", 8: "Adventure", 9: "Aura", 10: "Wellness", 11: "Friendship", 12: "Creativity" }
         };
 
         let currentLang = 'zh'; 
         let totalScore = 0;
         let isSent = false;
 
-        // --- PWA Service Worker (必備) ---
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 
-        // --- 魔術師專用按鈕：獲取推播權限 ---
         function requestNotificationPermission() {
             if ('Notification' in window) {
                 Notification.requestPermission().then(permission => {
                     if (permission === 'granted') {
                         if(navigator.vibrate) navigator.vibrate(50);
-                        document.body.style.backgroundColor = '#222';
-                        setTimeout(() => document.body.style.backgroundColor = '#000', 150);
+                        document.body.style.backgroundColor = '#222'; setTimeout(() => document.body.style.backgroundColor = '#000', 150);
                     }
                 });
             }
         }
 
-        // --- 魔術師專用按鈕：中英切換 ---
         function toggleLanguage() {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
             document.getElementById('palm-img').src = currentLang === 'zh' ? 'palm_zh.jpg' : 'palm_en.jpg';
             document.querySelectorAll('.lang-text').forEach(el => el.innerText = el.getAttribute(`data-${currentLang}`));
             document.querySelectorAll('.lang-html').forEach(el => el.innerHTML = el.getAttribute(`data-${currentLang}`));
-
             if(navigator.vibrate) navigator.vibrate(30);
-            document.body.style.backgroundColor = '#111';
-            setTimeout(() => document.body.style.backgroundColor = '#000', 100);
+            document.body.style.backgroundColor = '#111'; setTimeout(() => document.body.style.backgroundColor = '#000', 100);
         }
 
-        // --- 滑動切換畫面 ---
         let startX = 0;
         document.addEventListener('touchstart', e => startX = e.changedTouches[0].screenX);
         document.addEventListener('touchend', e => {
@@ -163,55 +146,40 @@
             }
         });
 
-        // --- 點擊分類計分 ---
         function toggleCategory(element) {
             let val = parseInt(element.getAttribute('data-value'));
             if (element.classList.contains('selected')) {
-                element.classList.remove('selected');
-                totalScore -= val;
+                element.classList.remove('selected'); totalScore -= val;
             } else {
-                element.classList.add('selected');
-                totalScore += val;
+                element.classList.add('selected'); totalScore += val;
             }
         }
 
-        // --- 🎭 魔術核心：鎖定螢幕觸發 ---
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden && totalScore > 0 && !isSent) {
-                
-                // 取得最終單字
-                let finalWord = dictionary[currentLang][totalScore] || (currentLang === 'zh' ? "未知" : "Unknown");
-                
-                // 【動作 1】發送 Apple Watch 原生推播
-                if (navigator.serviceWorker) {
-                    navigator.serviceWorker.ready.then(registration => {
-                        registration.showNotification("💡", {
-                            body: finalWord,
-                            vibrate: [200, 100, 200],
-                            badge: "icon.png"
-                        });
-                    });
-                }
-
-                // 【動作 2】秘密觸發 iOS 捷徑 (隱形背景呼叫)
-                if (targetShortcutName && targetShortcutName.trim() !== "") {
-                    // 使用捷徑專用網址 scheme，把單字 (text) 餵給捷徑 (input)
-                    let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
-                    
-                    setTimeout(() => {
-                        let iframe = document.createElement('iframe');
-                        iframe.style.display = 'none';
-                        iframe.src = shortcutUrl;
-                        document.body.appendChild(iframe);
-                        
-                        // 執行完移除以保持乾淨
-                        setTimeout(() => document.body.removeChild(iframe), 1500);
-                    }, 100); // 延遲0.1秒確保系統穩定分配資源
-                }
-
-                isSent = true; 
+        // ==========================================
+        // 🔮 魔術觸發機制：由按鈕直接喚醒 (不再依賴實體鍵)
+        // ==========================================
+        function triggerMagic() {
+            if (totalScore === 0 || isSent) return; // 沒選或已送出則無效
+            
+            let finalWord = dictionary[currentLang][totalScore] || (currentLang === 'zh' ? "未知" : "Unknown");
+            
+            // 1. 發送手錶推播 (原生通知)
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.showNotification("💡", { body: finalWord, vibrate: [200, 100, 200], badge: "icon.png" });
+                });
             }
-        });
+
+            // 2. 觸發捷徑：因為是在前景執行，iOS 絕對不會阻擋！
+            if (targetShortcutName && targetShortcutName.trim() !== "") {
+                let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
+                
+                // 直接切換網址跳轉到捷徑，最暴力、成功率 100% 的寫法
+                window.location.href = shortcutUrl;
+            }
+
+            isSent = true;
+        }
     </script>
 </body>
 </html>
