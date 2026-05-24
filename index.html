@@ -169,30 +169,38 @@
         }
 
         // ==========================================
-        // 🔮 終極觸發：確保黑屏先出現，再叫出捷徑
+        // 🔮 終極強制渲染觸發版 (解決瀏覽器吃掉畫面的問題)
         // ==========================================
         function triggerMagic() {
             if (totalScore === 0 || isSent) return; 
             
             let finalWord = dictionary[currentLang][totalScore] || (currentLang === 'zh' ? "未知" : "Unknown");
             
-            // 1. 網頁瞬間變黑 (視覺遮蔽)
+            // 1. 下達命令：把黑畫面拿出來
             document.getElementById('black-screen').style.display = 'block';
 
-            // 2. 瞬間發推播給手錶
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready.then(registration => {
-                    registration.showNotification("💡", { body: finalWord, vibrate: [200, 100, 200], badge: "icon.png" });
-                });
-            }
+            // 2. 利用雙重 requestAnimationFrame 強迫手機將「黑色畫面」畫到螢幕上！
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    
+                    // 確保畫面變黑後，才發送手錶推播
+                    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.ready.then(registration => {
+                            registration.showNotification("💡", { body: finalWord, vibrate: [200, 100, 200], badge: "icon.png" });
+                        });
+                    }
 
-            // 3. 【關鍵修正】等待 0.5 秒 (500毫秒)，確保瀏覽器已經把黑畫面渲染出來了，再去呼叫捷徑！
-            setTimeout(() => {
-                if (targetShortcutName && targetShortcutName.trim() !== "") {
-                    let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
-                    window.location.href = shortcutUrl; 
-                }
-            }, 500); 
+                    // 強制讓黑色畫面在螢幕上停留 1.5 秒 (1500 毫秒)
+                    setTimeout(() => {
+                        if (targetShortcutName && targetShortcutName.trim() !== "") {
+                            // 1.5 秒一到，呼叫捷徑並傳送文字，接著捷徑會執行真鎖屏！
+                            let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
+                            window.location.href = shortcutUrl; 
+                        }
+                    }, 1500);
+
+                });
+            });
 
             isSent = true;
         }
