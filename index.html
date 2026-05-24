@@ -47,7 +47,7 @@
         #btn-permission { position: absolute; top: 0; left: 0; width: 80px; height: 80px; z-index: 999; }
         #btn-language { position: absolute; top: 0; right: 0; width: 80px; height: 80px; z-index: 999; }
 
-        /* 🎩 修改為：逼真的系統鎖定過渡畫面 */
+        /* 🎩 逼真的系統鎖定過渡畫面 */
         #locking-screen {
             display: none; 
             position: absolute; top: 0; left: 0;
@@ -123,6 +123,7 @@
         <div class="submit-btn lang-text" data-zh="🔒 鎖定送出" data-en="🔒 Lock & Submit" onclick="triggerMagic()">🔒 鎖定送出</div>
     </div>
 
+
     <script>
         const targetShortcutName = "MagicTrigger"; 
 
@@ -179,12 +180,41 @@
             }
         }
 
+        // ==========================================
+        // 🔮 新增：自動重置回首頁功能 (Clean Up)
+        // ==========================================
+        function resetApp() {
+            // 1. 隱藏過渡動畫畫面
+            document.getElementById('locking-screen').style.display = 'none';
+            
+            // 2. 切換回第一頁 (首頁)
+            document.getElementById('screen1').style.transform = 'translateX(0)';
+            document.getElementById('screen2').style.transform = 'translateX(100%)';
+            
+            // 3. 清除所有觀眾點擊過的選項亮光
+            let categories = document.querySelectorAll('.category');
+            for(let i = 0; i < categories.length; i++) {
+                categories[i].classList.remove('selected');
+            }
+            
+            // 4. 分數與狀態歸零
+            totalScore = 0;
+            isSent = false;
+        }
+
+        // 當手機解鎖、或魔術師重新切回這個網頁時，立刻觸發重置
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden && isSent) {
+                resetApp();
+            }
+        });
+
         function triggerMagic() {
             if (totalScore === 0 || isSent) return; 
             
             let finalWord = dictionary[currentLang][totalScore] || (currentLang === 'zh' ? "未知" : "Unknown");
             
-            // 1. 顯示「系統鎖定中...」的動畫
+            // 顯示「系統鎖定中...」的動畫
             document.getElementById('locking-screen').style.display = 'flex';
 
             requestAnimationFrame(() => {
@@ -196,13 +226,18 @@
                         });
                     }
 
-                    // 1秒後，捷徑介入並強制斷電！
+                    // 1秒後，捷徑介入並強制斷電
                     setTimeout(() => {
                         if (targetShortcutName && targetShortcutName.trim() !== "") {
                             let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
                             window.location.href = shortcutUrl; 
                         }
-                    }, 8000);
+                        
+                        // 【關鍵】：在捷徑啟動後的 2 秒鐘，背景默默重置 App
+                        // 這樣不管 iOS 系統有沒有凍結這段程式，下次打開都絕對是乾淨的首頁！
+                        setTimeout(resetApp, 2000);
+
+                    }, 1000);
 
                 });
             });
