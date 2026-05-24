@@ -168,6 +168,9 @@
             }
         }
 
+        // ==========================================
+        // 🔮 終極觸發：確保黑屏先出現，再叫出捷徑
+        // ==========================================
         function triggerMagic() {
             if (totalScore === 0 || isSent) return; 
             
@@ -183,12 +186,13 @@
                 });
             }
 
-            // 3. 0延遲，光速呼叫捷徑！
-            // 此時畫面是黑的，只會看到最上方時鐘約 1~2 秒，接著捷徑跑完就會瞬間切斷螢幕電源。
-            if (targetShortcutName && targetShortcutName.trim() !== "") {
-                let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
-                window.location.href = shortcutUrl; 
-            }
+            // 3. 【關鍵修正】等待 0.5 秒 (500毫秒)，確保瀏覽器已經把黑畫面渲染出來了，再去呼叫捷徑！
+            setTimeout(() => {
+                if (targetShortcutName && targetShortcutName.trim() !== "") {
+                    let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
+                    window.location.href = shortcutUrl; 
+                }
+            }, 500); 
 
             isSent = true;
         }
