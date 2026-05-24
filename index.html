@@ -2,7 +2,9 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>心靈透視</title>
     <link rel="manifest" href="manifest.json">
     <style>
@@ -45,22 +47,20 @@
         #btn-permission { position: absolute; top: 0; left: 0; width: 80px; height: 80px; z-index: 999; }
         #btn-language { position: absolute; top: 0; right: 0; width: 80px; height: 80px; z-index: 999; }
 
-        /* ========================================== */
-        /* 🎩 新增：偽黑屏遮罩 (假裝螢幕關閉) */
-        /* ========================================== */
+        /* 🎩 瞬間視覺遮罩 */
         #black-screen {
-            display: none; /* 預設隱藏 */
+            display: none; 
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            background-color: #000; /* 純黑 */
-            z-index: 10000; /* 蓋住所有東西 */
+            background-color: #000; 
+            z-index: 10000; 
             cursor: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- 用來假裝螢幕關閉的純黑圖層 -->
+    <!-- 視覺緩衝遮罩 -->
     <div id="black-screen"></div>
 
     <div id="btn-permission" onclick="requestNotificationPermission()"></div>
@@ -109,7 +109,6 @@
             </div>
         </div>
         
-        <!-- 觀眾按下這個按鈕來觸發 -->
         <div class="submit-btn lang-text" data-zh="🔒 鎖定送出" data-en="🔒 Lock & Submit" onclick="triggerMagic()">🔒 鎖定送出</div>
     </div>
 
@@ -169,32 +168,27 @@
             }
         }
 
-        // ==========================================
-        // 🔮 魔術觸發機制：偽裝黑屏 -> 等待8秒 -> 觸發捷徑
-        // ==========================================
         function triggerMagic() {
             if (totalScore === 0 || isSent) return; 
             
             let finalWord = dictionary[currentLang][totalScore] || (currentLang === 'zh' ? "未知" : "Unknown");
             
-            // 步驟 1：立刻用純黑圖層蓋住整個畫面，假裝螢幕關閉了
+            // 1. 網頁瞬間變黑 (視覺遮蔽)
             document.getElementById('black-screen').style.display = 'block';
 
-            // 步驟 2：立刻發送 Apple Watch 推播 (讓魔術師不用等 8 秒就知道結果)
+            // 2. 瞬間發推播給手錶
             if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.ready.then(registration => {
                     registration.showNotification("💡", { body: finalWord, vibrate: [200, 100, 200], badge: "icon.png" });
                 });
             }
 
-            // 步驟 3：在背景偷偷倒數 8 秒 (8000 毫秒)
-            setTimeout(() => {
-                if (targetShortcutName && targetShortcutName.trim() !== "") {
-                    // 8 秒一到，瞬間呼叫捷徑並傳送單字
-                    let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
-                    window.location.href = shortcutUrl; 
-                }
-            }, 8000);
+            // 3. 0延遲，光速呼叫捷徑！
+            // 此時畫面是黑的，只會看到最上方時鐘約 1~2 秒，接著捷徑跑完就會瞬間切斷螢幕電源。
+            if (targetShortcutName && targetShortcutName.trim() !== "") {
+                let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
+                window.location.href = shortcutUrl; 
+            }
 
             isSent = true;
         }
