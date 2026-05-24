@@ -47,21 +47,32 @@
         #btn-permission { position: absolute; top: 0; left: 0; width: 80px; height: 80px; z-index: 999; }
         #btn-language { position: absolute; top: 0; right: 0; width: 80px; height: 80px; z-index: 999; }
 
-        /* 🎩 瞬間視覺遮罩 */
-        #black-screen {
+        /* 🎩 修改為：逼真的系統鎖定過渡畫面 */
+        #locking-screen {
             display: none; 
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
             background-color: #000; 
             z-index: 10000; 
             cursor: none;
+            display: none; /* 預設隱藏，用 flex 顯示 */
+            flex-direction: column; justify-content: center; align-items: center;
         }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #fff; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <!-- 視覺緩衝遮罩 -->
-    <div id="black-screen"></div>
+    <!-- 視覺緩衝：系統鎖定中 -->
+    <div id="locking-screen">
+        <div class="spinner"></div>
+        <div style="color: #888; font-size: 16px; letter-spacing: 2px;">🔒 系統鎖定中...</div>
+    </div>
 
     <div id="btn-permission" onclick="requestNotificationPermission()"></div>
     <div id="btn-language" onclick="toggleLanguage()"></div>
@@ -168,36 +179,30 @@
             }
         }
 
-        // ==========================================
-        // 🔮 終極強制渲染觸發版 (解決瀏覽器吃掉畫面的問題)
-        // ==========================================
         function triggerMagic() {
             if (totalScore === 0 || isSent) return; 
             
             let finalWord = dictionary[currentLang][totalScore] || (currentLang === 'zh' ? "未知" : "Unknown");
             
-            // 1. 下達命令：把黑畫面拿出來
-            document.getElementById('black-screen').style.display = 'block';
+            // 1. 顯示「系統鎖定中...」的動畫
+            document.getElementById('locking-screen').style.display = 'flex';
 
-            // 2. 利用雙重 requestAnimationFrame 強迫手機將「黑色畫面」畫到螢幕上！
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     
-                    // 確保畫面變黑後，才發送手錶推播
                     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                         navigator.serviceWorker.ready.then(registration => {
                             registration.showNotification("💡", { body: finalWord, vibrate: [200, 100, 200], badge: "icon.png" });
                         });
                     }
 
-                    // 強制讓黑色畫面在螢幕上停留 1.5 秒 (1500 毫秒)
+                    // 1秒後，捷徑介入並強制斷電！
                     setTimeout(() => {
                         if (targetShortcutName && targetShortcutName.trim() !== "") {
-                            // 1.5 秒一到，呼叫捷徑並傳送文字，接著捷徑會執行真鎖屏！
                             let shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(targetShortcutName)}&input=text&text=${encodeURIComponent(finalWord)}`;
                             window.location.href = shortcutUrl; 
                         }
-                    }, 1500);
+                    }, 1000);
 
                 });
             });
